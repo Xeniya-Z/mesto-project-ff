@@ -10,7 +10,7 @@
 
 const cardTemplate = document.getElementById('card-template').content;
 
-const renderCard = (cardItem, deleteCallback) => {
+const createCard = (cardItem, deleteCallback) => {
   const card = cardTemplate.querySelector('.card').cloneNode(true);
 
   card.querySelector('.card__image').src = cardItem.link;
@@ -26,6 +26,6 @@ const deleteCard = (card) => card.remove();
 
 const placesList = document.querySelector('.places__list');
 initialCards.forEach((item) => {
-  const card = renderCard(item, deleteCard);
+  const card = createCard(item, deleteCard);
   placesList.append(card);
 })
