@@ -1,13 +1,3 @@
-import { 
-  popups,
-  profileButton, 
-  profileAddButton, 
-  imageCardButtons, 
-  formElement, 
-  nameInput, 
-  jobInput 
-} from '../index.js';
-
 export const openPopup = (popupSelector) => {
   const popup = document.querySelector(popupSelector);
 
@@ -34,17 +24,4 @@ export const closePopupOnEsc = (evt) => {
       document.removeEventListener('keydown', closePopupOnEsc);
     }
   }
-};
-
-export const handleFormSubmit = (evt) => {
-  evt.preventDefault();
-
-  const nameInputValue = nameInput.value;
-  const jobInputValue = jobInput.value;
-
-  const profileTitle = document.querySelector('.profile__title');
-  const profileDescription = document.querySelector('.profile__description');
-
-  profileTitle.textContent  = nameInputValue;
-  profileDescription.textContent  = jobInputValue;
 };
