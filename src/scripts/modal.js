@@ -1,6 +1,14 @@
-import { popups, popupCloseButton, profileButton, profileAddButton, imageCardButtons, formElement, nameInput, jobInput } from '../index.js';
+import { 
+  popups,
+  profileButton, 
+  profileAddButton, 
+  imageCardButtons, 
+  formElement, 
+  nameInput, 
+  jobInput 
+} from '../index.js';
 
-export function openPopup(popupSelector) {
+export const openPopup = (popupSelector) => {
   const popup = document.querySelector(popupSelector);
 
   popup.classList.add('popup_is-animated');
@@ -9,16 +17,18 @@ export function openPopup(popupSelector) {
   document.addEventListener('keydown', closePopupOnEsc);
 };
 
-export function closePopupByButton(evt) {
+export const closePopup = (evt) => {
   const popup = evt.target.closest('.popup');
-    if (popup) {
-      popup.classList.remove('popup_is-opened');
-    }
+
+  if (evt.target.closest('.popup__close') || (evt.target === evt.currentTarget)) {
+    popup.classList.remove('popup_is-opened');
+  }
 };
 
-export function closePopupOnEsc(evt) {
+export const closePopupOnEsc = (evt) => {
   if (evt.key === 'Escape') {
-    const openedPopup = document.querySelector('.popup_is-opened'); 
+    const openedPopup = document.querySelector('.popup_is-opened');
+
     if (openedPopup) {
       openedPopup.classList.remove('popup_is-opened');
       document.removeEventListener('keydown', closePopupOnEsc);
@@ -26,13 +36,7 @@ export function closePopupOnEsc(evt) {
   }
 };
 
-export function closePopupByOverlayclick(evt) {
-  if (evt.target === evt.currentTarget) {
-    evt.currentTarget.classList.remove('popup_is-opened');
-  }
-};
-
-export function handleFormSubmit(evt) {
+export const handleFormSubmit = (evt) => {
   evt.preventDefault();
 
   const nameInputValue = nameInput.value;

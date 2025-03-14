@@ -1,6 +1,20 @@
 import './pages/index.css';
-import { initialCards, createCard, addCard, likeCard, openImageTypepopup } from './scripts/cards.js';
-import { openPopup, closePopupOnEsc, closePopupByButton, closePopupByOverlayclick, handleFormSubmit } from './scripts/modal.js';
+
+import { 
+  initialCards,
+  createCard, 
+  deleteCard, 
+  addCard, 
+  likeCard, 
+  openImageTypepopup 
+} from './scripts/cards.js';
+
+import { 
+  openPopup, 
+  closePopupOnEsc, 
+  closePopup, 
+  handleFormSubmit 
+} from './scripts/modal.js';
 
 const addIconImage = new URL('./images/add-icon.svg', import.meta.url);
 const avatarImage = new URL('./images/avatar.jpg', import.meta.url);
@@ -29,48 +43,37 @@ const images = [
 ];
 
 export const cardTemplate = document.getElementById('card-template').content;
-export const cardList = document.querySelector('.places__list');
-export const addCardForm = document.querySelector('.popup_type_new-card .popup__form');
+export const placesList = document.querySelector('.places__list');
 export const cardInputName = document.querySelector('.popup__input_type_card-name');
 export const cardInputLink = document.querySelector('.popup__input_type_url');
+export const addCardForm = document.querySelector('.popup_type_new-card .popup__form');
 
 addCardForm.addEventListener('submit', function(evt) {
   evt.preventDefault();
   addCard(cardInputName.value, cardInputLink.value, likeCard, openImageTypepopup);
 });
 
-
-export const deleteCard = (card) => card.remove();
-export const placesList = document.querySelector('.places__list');
 initialCards.forEach((item) => {
   const card = createCard(item, deleteCard, likeCard, openImageTypepopup);
   placesList.append(card);
 });
 
 export const popups = document.querySelectorAll('.popup');
-export const popupCloseButton = document.querySelectorAll('.popup__close');
-
-popupCloseButton.forEach((button) => {
-  button.addEventListener('click', closePopupByButton);
-});
-
 popups.forEach((popup) => {
-  popup.addEventListener('click', closePopupByOverlayclick);
+  popup.addEventListener('click', closePopup);
 });
 
 export const profileButton = document.querySelector('.profile__edit-button');
-export const profileAddButton = document.querySelector('.profile__add-button');
-export const imageCardButtons = document.querySelectorAll('.card__image');
-
-
 profileButton.addEventListener('click', () => {
   openPopup('.popup_type_edit');
 });
 
+export const profileAddButton = document.querySelector('.profile__add-button');
 profileAddButton.addEventListener('click', () => {
   openPopup('.popup_type_new-card');
 });
 
+export const imageCardButtons = document.querySelectorAll('.card__image');
 imageCardButtons.forEach((button) => {
   button.addEventListener('click', () => {
     openPopup('.popup_type_image');
@@ -84,8 +87,4 @@ export const jobInput = formElement.querySelector('.popup__input_type_descriptio
 nameInput.value = document.querySelector('.profile__title').textContent;
 jobInput.value = document.querySelector('.profile__description').textContent;
 
-
 formElement.addEventListener('submit', handleFormSubmit);
-
-
-

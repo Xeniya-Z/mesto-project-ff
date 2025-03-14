@@ -1,4 +1,10 @@
-import { cardTemplate, cardList, addCardForm, cardInputName, cardInputLink, deleteCard, placesList } from '../index.js';
+import { 
+  cardTemplate, 
+  placesList,
+  addCardForm, 
+  cardInputName, 
+  cardInputLink
+} from '../index.js';
 import { openPopup } from './modal.js';
 
 export const initialCards = [
@@ -39,36 +45,38 @@ export const createCard = (cardItem, deleteCallback, likeCard, openImageTypepopu
   deleteButton.addEventListener('click', () => deleteCallback(card));
 
   card.addEventListener('click', likeCard);
-  cardList.addEventListener('click', openImageTypepopup);
+  card.addEventListener('click', openImageTypepopup);
 
   return card
 };
 
-export function addCard(cardItemName, cardItemLink, likeCard, openImageTypepopup) {
-  const cardElement = cardTemplate.querySelector('.places__item').cloneNode(true);
+export const deleteCard = (card) => card.remove();
 
-  cardElement.querySelector('.card__title').textContent = cardItemName;
-  cardElement.querySelector('.card__image').src = cardItemLink;
-  cardElement.querySelector('.card__image').alt = cardItemName;
+export const addCard = (cardItemName, cardItemLink, likeCard, openImageTypepopup) => {
+  const card = cardTemplate.querySelector('.card').cloneNode(true);
 
-  cardList.prepend(cardElement);
+  card.querySelector('.card__title').textContent = cardItemName;
+  card.querySelector('.card__image').src = cardItemLink;
+  card.querySelector('.card__image').alt = cardItemName;
+
+  placesList.prepend(card);
   cardInputName.value = '';
   cardInputLink.value = '';
 
-  cardList.addEventListener('click', likeCard);
-  cardList.addEventListener('click', openImageTypepopup);
+  card.addEventListener('click', likeCard);
+  card.addEventListener('click', openImageTypepopup);
 
   const popup = document.querySelector('.popup_is-opened');
   popup.classList.remove('popup_is-opened');
 };
 
-export function likeCard(evt) {
+export const likeCard = (evt) => {
   if (evt.target && evt.target.classList.contains('card__like-button')) {
     evt.target.classList.toggle('card__like-button_is-active');
   }
 };
 
-export function openImageTypepopup(evt) {
+export const openImageTypepopup = (evt) => {
   if (evt.target.classList.contains('card__image')) {
     const imageTypePopup = document.querySelector('.popup_type_image');
     
