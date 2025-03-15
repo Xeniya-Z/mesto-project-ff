@@ -1,27 +1,35 @@
-export const openPopup = (popupSelector) => {
-  const popup = document.querySelector(popupSelector);
-
-  popup.classList.add('popup_is-animated');
+export const openPopup = (popup) => {
   popup.classList.add('popup_is-opened');
 
   document.addEventListener('keydown', closePopupOnEsc);
 };
 
-export const closePopup = (evt) => {
-  const popup = evt.target.closest('.popup');
-
-  if (evt.target.closest('.popup__close') || (evt.target === evt.currentTarget)) {
-    popup.classList.remove('popup_is-opened');
-  }
+export const closePopup = (popup) => {
+  popup.classList.remove('popup_is-opened');
 };
 
 export const closePopupOnEsc = (evt) => {
   if (evt.key === 'Escape') {
     const openedPopup = document.querySelector('.popup_is-opened');
-
+    
     if (openedPopup) {
-      openedPopup.classList.remove('popup_is-opened');
+      closePopup(openedPopup);
       document.removeEventListener('keydown', closePopupOnEsc);
     }
   }
 };
+
+export const setPopupEventListeners = (popup) => {
+  popup.classList.add('popup_is-animated');
+
+  const popupCloseButton = popup.querySelector('.popup__close');
+  popupCloseButton.addEventListener('click', (evt) => {
+    closePopup(popup)
+  });
+
+  popup.addEventListener('click', (evt) => {
+    if (evt.target === evt.currentTarget) {
+      closePopup(popup);
+    }
+  });
+}
