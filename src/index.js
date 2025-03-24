@@ -13,6 +13,11 @@ import {
   setPopupEventListeners
 } from './components/modal.js';
 
+import {
+  clearValidation,
+  enableValidation
+} from './components/validation.js'
+
 const addIconImage = new URL('./images/add-icon.svg', import.meta.url);
 const avatarImage = new URL('./images/avatar.jpg', import.meta.url);
 const card1Image = new URL('./images/card_1.jpg', import.meta.url);
@@ -39,6 +44,17 @@ const images = [
   { name: 'logo', link: logoImage },
 ];
 
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inputErrorClass: 'form__input_type_error',
+  errorClass: 'form__input-error_active',
+  inactiveButtonClass: 'popup__button_disabled'
+};
+
+enableValidation(validationConfig);
+
 const placesList = document.querySelector('.places__list');
 
 const openImageTypePopup = (cardTitle, cardUrl) => {
@@ -59,8 +75,8 @@ initialCards.forEach((item) => {
   placesList.append(card);
 });
 
-export const cardInputName = document.querySelector('.popup__input_type_card-name');
-export const cardInputLink = document.querySelector('.popup__input_type_url');
+const cardInputName = document.querySelector('.popup__input_type_card-name');
+const cardInputLink = document.querySelector('.popup__input_type_url');
 const addCardForm = document.querySelector('.popup_type_new-card .popup__form');
 
 const addCard = (cardItem, deleteCard, likeCard, openImageTypePopup) => {
@@ -89,16 +105,19 @@ popups.forEach((popup) => {
 
 const popupTypeEdit = document.querySelector('.popup_type_edit');
 const profileButton = document.querySelector('.profile__edit-button');
+
 profileButton.addEventListener('click', () => {
   nameInput.value = document.querySelector('.profile__title').textContent;
   jobInput.value = document.querySelector('.profile__description').textContent;
   openPopup(popupTypeEdit);
+  clearValidation(profileFormElement, validationConfig);
 });
 
 const popupTypeNewCard = document.querySelector('.popup_type_new-card');
 const profileAddButton = document.querySelector('.profile__add-button');
 profileAddButton.addEventListener('click', () => {
   openPopup(popupTypeNewCard);
+  clearValidation(addCardForm, validationConfig);
 });
 
 const profileFormElement = document.querySelector('.popup__form[name="edit-profile"]');
