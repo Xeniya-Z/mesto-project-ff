@@ -1,15 +1,19 @@
+// перенести .card__like-button-container из файла card__like-button.css
+// настроить ошибки catch и then с res.ok
+// проверить и починить валидацию
+// сделать конфиг на createCard
+// разобраться с переменной userId
+
 import './pages/index.css';
 import { initialCards } from './scripts/cards.js';
 import {
-  createCard, 
-  deleteCard,
+  createCard,
   likeCard,
 } from './components/card.js'
 
 import { 
   openPopup,
   closePopup,
-  closePopupOnEsc,
   setPopupEventListeners
 } from './components/modal.js';
 
@@ -70,32 +74,28 @@ const openImageTypePopup = (cardTitle, cardUrl) => {
   openPopup(imageTypePopup);
 };
 
-initialCards.forEach((item) => {
-  const card = createCard(item, deleteCard, likeCard, openImageTypePopup);
-  placesList.append(card);
-});
-
 const cardInputName = document.querySelector('.popup__input_type_card-name');
 const cardInputLink = document.querySelector('.popup__input_type_url');
 const addCardForm = document.querySelector('.popup_type_new-card .popup__form');
 
-const addCard = (cardItem, deleteCard, likeCard, openImageTypePopup) => {
-  const card = createCard(cardItem, deleteCard, likeCard, openImageTypePopup);
+const addCard = (cardItem, deleteCardFromServer, likeCard, openImageTypePopup) => {
+  postCardToServer(cardItem.name, cardItem.link)
+    .then((data) => {
+      const card = createCard(data, deleteCardFromServer, likeCard, openImageTypePopup, userId);
+      placesList.prepend(card);
 
-  cardInputName.value = '';
-  cardInputLink.value = '';
-
-  const popup = document.querySelector('.popup_is-opened');
-  closePopup(popup);
-
-  return card;
+      addCardForm.reset();
+      closePopup(document.querySelector('.popup_is-opened'));
+    })
+    .catch((err) => {
+      console.log('Ошибка при добавлении карточки:', err);
+    });
 };
 
 addCardForm.addEventListener('submit', function(evt) {
   evt.preventDefault();
   const cardItem = { name: cardInputName.value, link: cardInputLink.value };
-  const card = addCard(cardItem, deleteCard, likeCard, openImageTypePopup);
-  placesList.prepend(card);
+  addCard(cardItem, deleteCardFromServer, likeCard, openImageTypePopup);
 });
 
 const popups = document.querySelectorAll('.popup');
@@ -130,14 +130,127 @@ const handleProfileFormSubmit = (evt) => {
   const nameInputValue = nameInput.value;
   const jobInputValue = jobInput.value;
 
-  const profileTitle = document.querySelector('.profile__title');
-  const profileDescription = document.querySelector('.profile__description');
-
-  profileTitle.textContent  = nameInputValue;
-  profileDescription.textContent  = jobInputValue;
-
-  const popup = document.querySelector('.popup_is-opened');
-  closePopup(popup);
+  changeProfileData(nameInputValue, jobInputValue)
+  .then((data) => {
+    if (data) {
+      const profileTitle = document.querySelector('.profile__title');
+      const profileDescription = document.querySelector('.profile__description');
+    
+      profileTitle.textContent  = nameInputValue;
+      profileDescription.textContent  = jobInputValue;
+    
+      const popup = document.querySelector('.popup_is-opened');
+      closePopup(popup);
+    }
+  })
+  .catch((err) => {
+    console.log('Ошибка при обновлении профиля:', err)
+  })
 };
 
 profileFormElement.addEventListener('submit', handleProfileFormSubmit);
+
+
+const getProfileData = () => {
+  return fetch('https://nomoreparties.co/v1/wff-cohort-35/users/me', {
+    headers: {
+      authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28'
+    }
+  })
+  .then(res => res.json())
+};
+
+const getCards = () => {
+  return fetch('https://mesto.nomoreparties.co/v1/wff-cohort-35/cards', {
+    headers: {
+      authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28'
+    }
+  })
+  .then(res => res.json())
+};
+
+
+let userId;
+
+Promise.all([getProfileData(), getCards()])
+.then(([profileData, cards]) => {
+  console.log('Profile Data:', profileData);
+
+  userId = profileData._id;
+
+  document.querySelector('.profile__image').src = profileData.avatar;
+  document.querySelector('.profile__title').textContent = profileData.name;
+  document.querySelector('.profile__description').textContent = profileData.about;
+
+  cards.forEach((card) => {
+    const cardElement = createCard(card, deleteCardFromServer, likeCard, openImageTypePopup, userId);
+    placesList.append(cardElement);
+  });
+});
+
+
+// fetch('https://nomoreparties.co/v1/wff-cohort-35/users/me', {
+//   method: 'PATCH',
+//   headers: {
+//     authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28',
+//     'Content-Type': 'application/json'
+//   },
+//   body: JSON.stringify({
+//     name: 'Jack Torrance',
+//     about: 'Writer and winter caretaker of the Overlook Hotel'
+//   })
+// });
+
+const changeProfileData = (profileName, profileAbout) => {
+  return fetch('https://nomoreparties.co/v1/wff-cohort-35/users/me', {
+    method: 'PATCH',
+    headers: {
+      authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: profileName,
+      about: profileAbout
+    })
+  })
+  .then((res) => res.json())
+  .catch((err) => {
+    console.log('Ошибка при отправке данных Пользователя:', err);
+  });
+}
+
+
+
+
+const postCardToServer = (cardName, cardLink) => {
+  return fetch('https://mesto.nomoreparties.co/v1/wff-cohort-35/cards', {
+    method: 'POST',
+    headers: {
+      authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: cardName,
+      link: cardLink
+    })
+  })
+  .then((result) => result.json())
+  .catch((err) => {
+    console.log('Ошибка при отправке карточки:', err);
+  });
+};
+
+const deleteCardFromServer = (cardId) => {
+  return fetch(`https://mesto.nomoreparties.co/v1/wff-cohort-35/cards/${cardId}`, {
+    method: 'DELETE',
+    headers: {
+      authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28'
+    }
+  })
+  .then((res) => res.json())
+  .catch((err) => {
+    console.log('Error deleting card:', err);
+  });
+}
+
+

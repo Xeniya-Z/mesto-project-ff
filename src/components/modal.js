@@ -8,7 +8,7 @@ export const closePopup = (popup) => {
   popup.classList.remove('popup_is-opened');
 };
 
-export const closePopupOnEsc = (evt) => {
+const closePopupOnEsc = (evt) => {
   if (evt.key === 'Escape') {
     const openedPopup = document.querySelector('.popup_is-opened');
     

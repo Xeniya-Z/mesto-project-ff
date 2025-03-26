@@ -1,4 +1,4 @@
-export const createCard = (cardItem, deleteCallback, likeCard, openImageTypePopup) => {
+export const createCard = (cardItem, deleteCallback, likeCard, openImageTypePopup, userId) => {
   const cardTemplate = document.getElementById('card-template').content;
   const card = cardTemplate.querySelector('.card').cloneNode(true);
 
@@ -7,16 +7,26 @@ export const createCard = (cardItem, deleteCallback, likeCard, openImageTypePopu
   cardImage.alt = cardItem.name;
   card.querySelector('.card__title').textContent = cardItem.name;
 
+  const cardLikeCounter = card.querySelector('.card__like-count');
+  cardLikeCounter.textContent = cardItem.likes.length;
+
   const deleteButton = card.querySelector('.card__delete-button');
-  deleteButton.addEventListener('click', () => deleteCallback(card));
+  if (cardItem.owner._id === userId) {
+    deleteButton.addEventListener('click', () => {
+      deleteCallback(cardItem._id)
+      .then(() => {
+        card.remove();
+      });
+    });
+  } else {
+    deleteButton.style.display = 'none';
+  }
 
   card.addEventListener('click', likeCard);
   cardImage.addEventListener('click', () => openImageTypePopup(cardItem.name, cardItem.link));
 
   return card
 };
-
-export const deleteCard = (card) => card.remove();
 
 export const likeCard = (evt) => {
   if (evt.target && evt.target.classList.contains('card__like-button')) {
