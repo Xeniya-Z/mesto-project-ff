@@ -1,4 +1,5 @@
 import { sendLikeToServer, deleteLikeFromServer, deleteCardFromServer } from './api.js';
+import { openPopup, closePopup } from './modal.js';
 
 export const createCard = (cardItem, cardConfig) => {
   const cardTemplate = document.getElementById('card-template').content;
@@ -28,11 +29,21 @@ export const createCard = (cardItem, cardConfig) => {
 };
 
 export const deleteCard = (card, cardId, deleteCardFromServer) => {
-  deleteCardFromServer(cardId)
-    .then(() => card.remove())
+  const deleteCardPopup = document.querySelector('.popup_type_delete-card');
+  openPopup(deleteCardPopup);
+
+  const confirmDeleteButton = deleteCardPopup.querySelector('.popup__button');
+
+  confirmDeleteButton.addEventListener('click', () => {
+    deleteCardFromServer(cardId)
+    .then(() => {
+      card.remove();
+      closePopup(deleteCardPopup)
+    })
     .catch((err) => {
       console.log('Ошибка при удалении карточки', err);
     });
+  })
 };
 
 export const likeCard = (evt) => {
