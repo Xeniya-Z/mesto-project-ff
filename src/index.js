@@ -1,8 +1,3 @@
-// настроить ошибки catch и then с res.ok
-// проверить и починить валидацию
-// сделать конфиг на createCard
-// разобраться с переменной userId
-
 import './pages/index.css';
 import {
   createCard,
@@ -27,7 +22,6 @@ import {
   changeProfileData,
   changeProfileAvatar,
   postCardToServer,
-  deleteCardFromServer,
 } from './components/api.js';
 
 const addIconImage = new URL('./images/add-icon.svg', import.meta.url);
@@ -82,19 +76,26 @@ const openImageTypePopup = (cardTitle, cardUrl) => {
   openPopup(imageTypePopup);
 };
 
+const cardConfig = {
+  deleteCard,
+  likeCard,
+  openImageTypePopup,
+  userId
+};
+
 const placesList = document.querySelector('.places__list');
 
 const cardInputName = document.querySelector('.popup__input_type_card-name');
 const cardInputLink = document.querySelector('.popup__input_type_url');
 const addCardForm = document.querySelector('.popup_type_new-card .popup__form');
 
-const addCard = (cardItem, deleteCard, likeCard, openImageTypePopup) => {
+const addCard = (cardItem, cardConfig) => {
   const saveButton = addCardForm.querySelector('.popup__button');
   setButtonLoadingState(saveButton, true);
 
   postCardToServer(cardItem.name, cardItem.link)
     .then((data) => {
-      const card = createCard(data, deleteCard, likeCard, openImageTypePopup, userId);
+      const card = createCard(data, cardConfig);
       placesList.prepend(card);
 
       addCardForm.reset();
@@ -109,7 +110,7 @@ const addCard = (cardItem, deleteCard, likeCard, openImageTypePopup) => {
 addCardForm.addEventListener('submit', function(evt) {
   evt.preventDefault();
   const cardItem = { name: cardInputName.value, link: cardInputLink.value };
-  addCard(cardItem, deleteCard, likeCard, openImageTypePopup);
+  addCard(cardItem, cardConfig);
 });
 
 const popups = document.querySelectorAll('.popup');
@@ -216,6 +217,7 @@ Promise.all([getProfileData(), getCards()])
   console.log('Profile Data:', profileData);
 
   userId = profileData._id;
+  cardConfig.userId = userId;
 
   document.querySelector('.profile__image').style.backgroundImage = `url('${profileData.avatar}')`;
   document.querySelector('.profile__title').textContent = profileData.name;
@@ -223,7 +225,7 @@ Promise.all([getProfileData(), getCards()])
 
   cards.forEach((card) => {
     cardId = card._id;
-    const cardElement = createCard(card, deleteCardFromServer, likeCard, openImageTypePopup, userId);
+    const cardElement = createCard(card, cardConfig);
     placesList.append(cardElement);
     cardElement.setAttribute('data-id', cardId);
   });

@@ -1,6 +1,6 @@
 import { sendLikeToServer, deleteLikeFromServer, deleteCardFromServer } from './api.js';
 
-export const createCard = (cardItem, deleteCard, likeCard, openImageTypePopup, userId) => {
+export const createCard = (cardItem, cardConfig) => {
   const cardTemplate = document.getElementById('card-template').content;
   const card = cardTemplate.querySelector('.card').cloneNode(true);
 
@@ -13,16 +13,16 @@ export const createCard = (cardItem, deleteCard, likeCard, openImageTypePopup, u
   cardLikeCounter.textContent = cardItem.likes.length;
 
   const deleteButton = card.querySelector('.card__delete-button');
-  if (cardItem.owner._id === userId) {
-    deleteButton.addEventListener('click', () => deleteCard(card, cardItem._id, deleteCardFromServer));
+  if (cardItem.owner._id === cardConfig.userId) {
+    deleteButton.addEventListener('click', () => cardConfig.deleteCard(card, cardItem._id, deleteCardFromServer));
   } else {
     deleteButton.style.display = 'none';
   }
 
   card.setAttribute('data-id', cardItem._id);
 
-  card.addEventListener('click', likeCard);
-  cardImage.addEventListener('click', () => openImageTypePopup(cardItem.name, cardItem.link));
+  card.addEventListener('click', (evt) => cardConfig.likeCard(evt, cardItem, cardLikeCounter));
+  cardImage.addEventListener('click', () => cardConfig.openImageTypePopup(cardItem.name, cardItem.link));
 
   return card
 };

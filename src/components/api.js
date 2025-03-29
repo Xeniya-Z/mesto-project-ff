@@ -33,10 +33,9 @@ export const getCards = () => {
 
     return Promise.reject(`Ошибка: ${res.status}`);
   })
-  // проверить строку ниже надо оно или нет
   .then(data => {
-    console.log(data);  // Выводим массив в консоль
-    return data;        // Возвращаем данные, чтобы их можно было использовать дальше
+    console.log(data);
+    return data;
   })
   .catch(err => {
     console.log('Ошибка при получении карточек:', err);
