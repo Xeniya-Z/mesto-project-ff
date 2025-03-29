@@ -1,13 +1,12 @@
-// перенести .card__like-button-container из файла card__like-button.css
 // настроить ошибки catch и then с res.ok
 // проверить и починить валидацию
 // сделать конфиг на createCard
 // разобраться с переменной userId
 
 import './pages/index.css';
-import { initialCards } from './scripts/cards.js';
 import {
   createCard,
+  deleteCard,
   likeCard,
 } from './components/card.js'
 
@@ -22,6 +21,15 @@ import {
   enableValidation
 } from './components/validation.js'
 
+import {
+  getProfileData,
+  getCards,
+  changeProfileData,
+  changeProfileAvatar,
+  postCardToServer,
+  deleteCardFromServer,
+} from './components/api.js';
+
 const addIconImage = new URL('./images/add-icon.svg', import.meta.url);
 const avatarImage = new URL('./images/avatar.jpg', import.meta.url);
 const card1Image = new URL('./images/card_1.jpg', import.meta.url);
@@ -33,6 +41,7 @@ const editIconImage = new URL('./images/edit-icon.svg', import.meta.url);
 const likeActiveImage = new URL('./images/like-active.svg', import.meta.url);
 const likeInactiveImage = new URL('./images/like-inactive.svg', import.meta.url);
 const logoImage = new URL('./images/logo.svg', import.meta.url);
+const editAvatarImage = new URL('./images/edit-avatar.svg', import.meta.url);
 
 const images = [
   { name: 'add-Icon', link: addIconImage },
@@ -46,6 +55,7 @@ const images = [
   { name: 'like-active', link: likeActiveImage },
   { name: 'like-inactive', link: likeInactiveImage },
   { name: 'logo', link: logoImage },
+  { name: 'edit-avatar', link: editAvatarImage },
 ];
 
 const validationConfig = {
@@ -58,8 +68,6 @@ const validationConfig = {
 };
 
 enableValidation(validationConfig);
-
-const placesList = document.querySelector('.places__list');
 
 const openImageTypePopup = (cardTitle, cardUrl) => {
   const imageTypePopup = document.querySelector('.popup_type_image');
@@ -74,14 +82,19 @@ const openImageTypePopup = (cardTitle, cardUrl) => {
   openPopup(imageTypePopup);
 };
 
+const placesList = document.querySelector('.places__list');
+
 const cardInputName = document.querySelector('.popup__input_type_card-name');
 const cardInputLink = document.querySelector('.popup__input_type_url');
 const addCardForm = document.querySelector('.popup_type_new-card .popup__form');
 
-const addCard = (cardItem, deleteCardFromServer, likeCard, openImageTypePopup) => {
+const addCard = (cardItem, deleteCard, likeCard, openImageTypePopup) => {
+  const saveButton = addCardForm.querySelector('.popup__button');
+  setButtonLoadingState(saveButton, true);
+
   postCardToServer(cardItem.name, cardItem.link)
     .then((data) => {
-      const card = createCard(data, deleteCardFromServer, likeCard, openImageTypePopup, userId);
+      const card = createCard(data, deleteCard, likeCard, openImageTypePopup, userId);
       placesList.prepend(card);
 
       addCardForm.reset();
@@ -89,18 +102,27 @@ const addCard = (cardItem, deleteCardFromServer, likeCard, openImageTypePopup) =
     })
     .catch((err) => {
       console.log('Ошибка при добавлении карточки:', err);
-    });
+    })
+    .finally(() => setButtonLoadingState(saveButton, false))
 };
 
 addCardForm.addEventListener('submit', function(evt) {
   evt.preventDefault();
   const cardItem = { name: cardInputName.value, link: cardInputLink.value };
-  addCard(cardItem, deleteCardFromServer, likeCard, openImageTypePopup);
+  addCard(cardItem, deleteCard, likeCard, openImageTypePopup);
 });
 
 const popups = document.querySelectorAll('.popup');
 popups.forEach((popup) => {
   setPopupEventListeners(popup);
+});
+
+const popupTypeEditAvatar = document.querySelector('.popup_type_edit_avatar');
+const avatarButton = document.querySelector('.avatar__edit-button');
+
+avatarButton.addEventListener('click', () => {
+  openPopup(popupTypeEditAvatar);
+  clearValidation(avatarFormElement, validationConfig);
 });
 
 const popupTypeEdit = document.querySelector('.popup_type_edit');
@@ -115,10 +137,42 @@ profileButton.addEventListener('click', () => {
 
 const popupTypeNewCard = document.querySelector('.popup_type_new-card');
 const profileAddButton = document.querySelector('.profile__add-button');
+
 profileAddButton.addEventListener('click', () => {
   openPopup(popupTypeNewCard);
   clearValidation(addCardForm, validationConfig);
 });
+
+const avatarFormElement = document.querySelector('.popup__form[name="edit-avatar"]');
+const avatarInput = avatarFormElement.querySelector('.popup__input_type_avatar_url');
+
+const handleAvatarFormSubmit = (evt) => {
+  evt.preventDefault();
+
+  const saveButton = avatarFormElement.querySelector('.popup__button');
+  setButtonLoadingState(saveButton, true);
+
+  const avatarInputValue = avatarInput.value;
+
+  changeProfileAvatar(avatarInputValue)
+    .then((data) => {
+      if (data) {
+        const profileImage = document.querySelector('.profile__image');
+        profileImage.style.backgroundImage = `url('${data.avatar}')`;
+
+        const popup = document.querySelector('.popup_is-opened');
+        closePopup(popup);
+
+        avatarInput.value = '';
+      }
+    })
+    .catch((err) => {
+      console.log('Ошибка при обновлении аватара:', err);
+    })
+    .finally(() => setButtonLoadingState(saveButton, false))
+};
+
+avatarFormElement.addEventListener('submit', handleAvatarFormSubmit);
 
 const profileFormElement = document.querySelector('.popup__form[name="edit-profile"]');
 const nameInput = profileFormElement.querySelector('.popup__input_type_name');
@@ -126,6 +180,9 @@ const jobInput = profileFormElement.querySelector('.popup__input_type_descriptio
 
 const handleProfileFormSubmit = (evt) => {
   evt.preventDefault();
+
+  const saveButton = profileFormElement.querySelector('.popup__button');
+  setButtonLoadingState(saveButton, true);
 
   const nameInputValue = nameInput.value;
   const jobInputValue = jobInput.value;
@@ -144,33 +201,15 @@ const handleProfileFormSubmit = (evt) => {
     }
   })
   .catch((err) => {
-    console.log('Ошибка при обновлении профиля:', err)
+    console.log('Ошибка при обновлении данных Пользователя:', err)
   })
+  .finally(() => setButtonLoadingState(saveButton, false))
 };
 
 profileFormElement.addEventListener('submit', handleProfileFormSubmit);
 
-
-const getProfileData = () => {
-  return fetch('https://nomoreparties.co/v1/wff-cohort-35/users/me', {
-    headers: {
-      authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28'
-    }
-  })
-  .then(res => res.json())
-};
-
-const getCards = () => {
-  return fetch('https://mesto.nomoreparties.co/v1/wff-cohort-35/cards', {
-    headers: {
-      authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28'
-    }
-  })
-  .then(res => res.json())
-};
-
-
 let userId;
+let cardId;
 
 Promise.all([getProfileData(), getCards()])
 .then(([profileData, cards]) => {
@@ -178,79 +217,27 @@ Promise.all([getProfileData(), getCards()])
 
   userId = profileData._id;
 
-  document.querySelector('.profile__image').src = profileData.avatar;
+  document.querySelector('.profile__image').style.backgroundImage = `url('${profileData.avatar}')`;
   document.querySelector('.profile__title').textContent = profileData.name;
   document.querySelector('.profile__description').textContent = profileData.about;
 
   cards.forEach((card) => {
+    cardId = card._id;
     const cardElement = createCard(card, deleteCardFromServer, likeCard, openImageTypePopup, userId);
     placesList.append(cardElement);
+    cardElement.setAttribute('data-id', cardId);
   });
 });
 
-
-// fetch('https://nomoreparties.co/v1/wff-cohort-35/users/me', {
-//   method: 'PATCH',
-//   headers: {
-//     authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28',
-//     'Content-Type': 'application/json'
-//   },
-//   body: JSON.stringify({
-//     name: 'Jack Torrance',
-//     about: 'Writer and winter caretaker of the Overlook Hotel'
-//   })
-// });
-
-const changeProfileData = (profileName, profileAbout) => {
-  return fetch('https://nomoreparties.co/v1/wff-cohort-35/users/me', {
-    method: 'PATCH',
-    headers: {
-      authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      name: profileName,
-      about: profileAbout
-    })
-  })
-  .then((res) => res.json())
-  .catch((err) => {
-    console.log('Ошибка при отправке данных Пользователя:', err);
-  });
-}
-
-
-
-
-const postCardToServer = (cardName, cardLink) => {
-  return fetch('https://mesto.nomoreparties.co/v1/wff-cohort-35/cards', {
-    method: 'POST',
-    headers: {
-      authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      name: cardName,
-      link: cardLink
-    })
-  })
-  .then((result) => result.json())
-  .catch((err) => {
-    console.log('Ошибка при отправке карточки:', err);
-  });
-};
-
-const deleteCardFromServer = (cardId) => {
-  return fetch(`https://mesto.nomoreparties.co/v1/wff-cohort-35/cards/${cardId}`, {
-    method: 'DELETE',
-    headers: {
-      authorization: 'c44508a0-0c2c-4cb7-9d60-63e4113ccd28'
+const setButtonLoadingState = (button, isLoading) => {
+  if (isLoading) {
+    if (!button.dataset.originalText) {
+      button.dataset.originalText = button.textContent;
     }
-  })
-  .then((res) => res.json())
-  .catch((err) => {
-    console.log('Error deleting card:', err);
-  });
-}
-
+    button.textContent = 'Сохранение...';
+  } else {
+    button.textContent = button.dataset.originalText;
+    delete button.dataset.originalText;
+  }
+};
 
