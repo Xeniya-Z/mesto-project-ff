@@ -85,13 +85,9 @@ const cardConfig = {
 
 const placesList = document.querySelector('.places__list');
 
-const cardInputName = document.querySelector('.popup__input_type_card-name');
-const cardInputLink = document.querySelector('.popup__input_type_url');
-const addCardForm = document.querySelector('.popup_type_new-card .popup__form');
-
 const addCard = (cardItem, cardConfig) => {
   const saveButton = addCardForm.querySelector('.popup__button');
-  setButtonLoadingState(saveButton, true);
+  renderLoading(saveButton, true);
 
   postCardToServer(cardItem.name, cardItem.link)
     .then((data) => {
@@ -104,8 +100,12 @@ const addCard = (cardItem, cardConfig) => {
     .catch((err) => {
       console.log('Ошибка при добавлении карточки:', err);
     })
-    .finally(() => setButtonLoadingState(saveButton, false))
+    .finally(() => renderLoading(saveButton, false))
 };
+
+const addCardForm = document.querySelector('.popup_type_new-card .popup__form');
+const cardInputName = addCardForm.querySelector('.popup__input_type_card-name');
+const cardInputLink = addCardForm.querySelector('.popup__input_type_url');
 
 addCardForm.addEventListener('submit', function(evt) {
   evt.preventDefault();
@@ -151,7 +151,7 @@ const handleAvatarFormSubmit = (evt) => {
   evt.preventDefault();
 
   const saveButton = avatarFormElement.querySelector('.popup__button');
-  setButtonLoadingState(saveButton, true);
+  renderLoading(saveButton, true);
 
   const avatarInputValue = avatarInput.value;
 
@@ -170,7 +170,7 @@ const handleAvatarFormSubmit = (evt) => {
     .catch((err) => {
       console.log('Ошибка при обновлении аватара:', err);
     })
-    .finally(() => setButtonLoadingState(saveButton, false))
+    .finally(() => renderLoading(saveButton, false))
 };
 
 avatarFormElement.addEventListener('submit', handleAvatarFormSubmit);
@@ -183,7 +183,7 @@ const handleProfileFormSubmit = (evt) => {
   evt.preventDefault();
 
   const saveButton = profileFormElement.querySelector('.popup__button');
-  setButtonLoadingState(saveButton, true);
+  renderLoading(saveButton, true);
 
   const nameInputValue = nameInput.value;
   const jobInputValue = jobInput.value;
@@ -204,7 +204,7 @@ const handleProfileFormSubmit = (evt) => {
   .catch((err) => {
     console.log('Ошибка при обновлении данных Пользователя:', err)
   })
-  .finally(() => setButtonLoadingState(saveButton, false))
+  .finally(() => renderLoading(saveButton, false))
 };
 
 profileFormElement.addEventListener('submit', handleProfileFormSubmit);
@@ -231,15 +231,15 @@ Promise.all([getProfileData(), getCards()])
   });
 });
 
-const setButtonLoadingState = (button, isLoading) => {
+const renderLoading = (button, isLoading) => {
   if (isLoading) {
-    if (!button.dataset.originalText) {
-      button.dataset.originalText = button.textContent;
+    if (!button.dataset.originalButtonText) {
+      button.dataset.originalButtonText = button.textContent;
     }
     button.textContent = 'Сохранение...';
   } else {
-    button.textContent = button.dataset.originalText;
-    delete button.dataset.originalText;
+    button.textContent = button.dataset.originalButtonText;
+    delete button.dataset.originalButtonText;
   }
 };
 
