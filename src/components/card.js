@@ -13,12 +13,19 @@ export const createCard = (cardItem, cardConfig) => {
   const cardLikeCounter = card.querySelector('.card__like-count');
   cardLikeCounter.textContent = cardItem.likes.length;
 
+  cardItem.likes.forEach(like => {
+    if(like._id === cardConfig.userId) {
+      const likeButton = card.querySelector('.card__like-button');
+      likeButton.classList.add('card__like-button_is-active');
+    }
+  });
+
   const deleteButton = card.querySelector('.card__delete-button');
   if (cardItem.owner._id === cardConfig.userId) {
     deleteButton.addEventListener('click', () => cardConfig.deleteCard(card, cardItem._id, deleteCardFromServer));
   } else {
     deleteButton.style.display = 'none';
-  }
+  };
 
   card.setAttribute('data-id', cardItem._id);
 

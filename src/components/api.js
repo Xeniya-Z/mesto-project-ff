@@ -83,7 +83,6 @@ export const changeProfileAvatar = (profileAvatar) => {
   });
 };
 
-
 export const postCardToServer = (cardName, cardLink) => {
   return fetch(`${apiConfig.baseUrl}/cards`, {
     method: 'POST',
