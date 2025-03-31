@@ -24,6 +24,11 @@ import {
   postCardToServer,
 } from './components/api.js';
 
+// Здравствуйте.
+// Данный код был добавлен в рамках 6 спринта (тема 3, урок 9) для работы с изображениями в проекте.
+// Он позволяет Webpack автоматически обрабатывать и заменять пути на правильные при сборке.
+// Строки с 32 по 43 создают абсолютные пути к файлам, которые Webpack будет обрабатывать при сборке,
+// строки с 45 по 58 хранят эти пути в виде массива.
 const addIconImage = new URL('./images/add-icon.svg', import.meta.url);
 const avatarImage = new URL('./images/avatar.jpg', import.meta.url);
 const card1Image = new URL('./images/card_1.jpg', import.meta.url);
@@ -185,17 +190,14 @@ const handleProfileFormSubmit = (evt) => {
   const saveButton = profileFormElement.querySelector('.popup__button');
   renderLoading(saveButton, true);
 
-  const nameInputValue = nameInput.value;
-  const jobInputValue = jobInput.value;
-
-  changeProfileData(nameInputValue, jobInputValue)
+  changeProfileData(nameInput.value, jobInput.value)
   .then((data) => {
     if (data) {
       const profileTitle = document.querySelector('.profile__title');
       const profileDescription = document.querySelector('.profile__description');
     
-      profileTitle.textContent  = nameInputValue;
-      profileDescription.textContent  = jobInputValue;
+      profileTitle.textContent  = data.name;
+      profileDescription.textContent  = data.about;
     
       const popup = document.querySelector('.popup_is-opened');
       closePopup(popup);
@@ -210,7 +212,6 @@ const handleProfileFormSubmit = (evt) => {
 profileFormElement.addEventListener('submit', handleProfileFormSubmit);
 
 let userId;
-let cardId;
 
 Promise.all([getProfileData(), getCards()])
 .then(([profileData, cards]) => {
@@ -224,7 +225,7 @@ Promise.all([getProfileData(), getCards()])
   document.querySelector('.profile__description').textContent = profileData.about;
 
   cards.forEach((card) => {
-    cardId = card._id;
+    const cardId = card._id;
     const cardElement = createCard(card, cardConfig);
     placesList.append(cardElement);
     cardElement.setAttribute('data-id', cardId);

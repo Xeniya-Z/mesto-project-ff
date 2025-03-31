@@ -6,6 +6,8 @@ export const openPopup = (popup) => {
 
 export const closePopup = (popup) => {
   popup.classList.remove('popup_is-opened');
+  
+  document.removeEventListener('keydown', closePopupOnEsc);
 };
 
 const closePopupOnEsc = (evt) => {
@@ -14,7 +16,6 @@ const closePopupOnEsc = (evt) => {
     
     if (openedPopup) {
       closePopup(openedPopup);
-      document.removeEventListener('keydown', closePopupOnEsc);
     }
   }
 };
